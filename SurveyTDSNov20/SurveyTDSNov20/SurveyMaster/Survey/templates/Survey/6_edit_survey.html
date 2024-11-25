@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Survey</title>
+</head>
+<body>
+    <h1>Edit Survey: {{ survey.name }}</h1>
+
+    <!-- Display any form errors -->
+    {% if survey_form.errors or question_formset.errors or option_formset.errors %}
+        <div style="color: red;">
+            <ul>
+                {% for field in survey_form %}
+                    {% for error in field.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+                {% for form in question_formset %}
+                    {% for error in form.errors.values %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+                {% for form in option_formset %}
+                    {% for error in form.errors.values %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <!-- Form for editing the survey -->
+    <form method="POST">
+        {% csrf_token %}
+
+        <!-- Survey Details -->
+        <fieldset>
+            <legend>Survey Details</legend>
+            {{ survey_form.as_p }}
+        </fieldset>
+
+        <!-- Questions and Options -->
+        <fieldset>
+            <legend>Questions</legend>
+            {{ question_formset.management_form }}
+            {% for question_form in question_formset %}
+                <div style="margin-bottom: 20px; border: 1px solid #ccc; padding: 10px;">
+                    <h3>Question {{ forloop.counter }}</h3>
+                    {{ question_form.as_p }}
+                    
+                    <!-- Options for each question -->
+                    <fieldset>
+                        <legend>Options</legend>
+                        {{ option_formset.management_form }}
+                        {% for option_form in option_formset %}
+                            <div style="margin-left: 20px;">
+                                {{ option_form.as_p }}
+                            </div>
+                        {% endfor %}
+                    </fieldset>
+                </div>
+            {% endfor %}
+        </fieldset>
+
+        <!-- Submit Button -->
+        <button type="submit">Update Survey</button>
+    </form>
+
+    <!-- Back to Dashboard link -->
+    <br>
+    <a href="{% url 'creator_dashboard' %}">Back to Dashboard</a>
+</body>
+</html>

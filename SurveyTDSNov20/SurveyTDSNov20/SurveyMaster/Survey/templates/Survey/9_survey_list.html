@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Survey List</title>
+</head>
+<body>
+    <h1>Available Surveys</h1>
+
+    <!-- Display the published surveys -->
+    <ul>
+        {% for survey in surveys %}
+            <li>
+                <strong>{{ survey.name }}</strong><br>
+                {{ survey.description }}<br>
+                <!-- Link to take the survey -->
+                <a href="{% url 'take_survey' survey.id %}">Take Survey</a>
+            </li>
+        {% empty %}
+            <li>No surveys available to take.</li>
+        {% endfor %}
+    </ul>
+
+    <br>
+    <a href="/logout/">Logout</a>
+</body>
+</html>
