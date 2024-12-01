@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title|default:"Take Survey - SurveyMaster" }}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            background-color: #f8f9fa;
+            padding: 10px 20px;
+        }
+        .nav-link {
+            text-decoration: none;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .nav-link:hover {
+            text-decoration: underline;
+        }
+        main {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .question-block {
+            margin-bottom: 20px;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        ul li {
+            margin-bottom: 10px;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            font-size: 1rem;
+        }
+        .btn {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .error {
+            color: red;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #6c757d;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f8f9fa;
+        }
+        .aggregated-results {
+            margin-top: 20px;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .aggregated-results h4 {
+            color: #343a40;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav class="navbar">
+            <a href="{% url 'survey_list' %}" class="nav-link">Survey List</a>
+            <a href="{% url 'logout' %}" class="nav-link">Logout</a>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <h1>{{ survey.name }}</h1>
+        <p>{{ survey.description }}</p>
+        <hr>
+
+        {% if questions %}
+        <form method="POST" action="{% url 'submit_survey' survey.id %}">
+            {% csrf_token %}
+
+            <!-- Questions -->
+            {% for question in questions %}
+            <div class="question-block" data-type="{{ question.question_type }}" data-id="{{ question.id }}">
+                <h3>{{ question.text }}</h3>
+
+                {% if question.question_type == "radio" %}
+                <ul>
+                    {% for option in question.options.all %}
+                    <li>
+                        <label for="option_{{ option.id }}">
+                            <input type="radio" id="option_{{ option.id }}" name="question_{{ question.id }}" value="{{ option.id }}" required aria-label="{{ option.text }}">
+                            {{ option.text }}
+                        </label>
+                    </li>
+                    {% empty %}
+                    <li>No options available for this question.</li>
+                    {% endfor %}
+                </ul>
+
+                {% elif question.question_type == "checkbox" %}
+                <ul>
+                    {% for option in question.options.all %}
+                    <li>
+                        <label for="option_{{ option.id }}">
+                            <input type="checkbox" id="option_{{ option.id }}" name="question_{{ question.id }}" value="{{ option.id }}" aria-label="{{ option.text }}">
+                            {{ option.text }}
+                        </label>
+                    </li>
+                    {% empty %}
+                    <li>No options available for this question.</li>
+                    {% endfor %}
+                </ul>
+
+                {% elif question.question_type == "text" %}
+                <textarea name="question_{{ question.id }}" rows="4" required></textarea>
+                {% else %}
+                <p class="error">Invalid question type: {{ question.question_type }}</p>
+                {% endif %}
+
+                <!-- Aggregated Results for Republished Surveys -->
+                {% if survey.status|lower == "republished" %}
+                <div class="aggregated-results">
+                    <h4>Aggregated Results (Wisdom of the Crowd)</h4>
+                    {% if question.get_aggregated_data %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Option</th>
+                                <th>Responses</th>
+                                <th>Percentage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for result in question.get_aggregated_data %}
+                            <tr>
+                                <td>{{ result.option }}</td>
+                                <td>{{ result.count }}</td>
+                                <td>{{ result.percentage }}%</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p>No aggregated results available for this question.</p>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+            <hr>
+            {% endfor %}
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn">Submit Survey</button>
+        </form>
+        {% else %}
+        <p class="error">No questions available for this survey.</p>
+        {% endif %}
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; {% now "Y" %} SurveyMaster. All rights reserved.</p>
+    </footer>
+</body>
+</html>

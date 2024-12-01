@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title|default:"Survey Results - SurveyMaster" }}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            background-color: #f8f9fa;
+            padding: 10px 20px;
+        }
+        .nav-link {
+            text-decoration: none;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .nav-link:hover {
+            text-decoration: underline;
+        }
+        main {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .results {
+            margin-top: 20px;
+        }
+        .question {
+            margin-bottom: 20px;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        ul li {
+            margin-bottom: 10px;
+        }
+        .response-count {
+            font-weight: bold;
+            color: #28a745;
+        }
+        .percentage {
+            font-weight: bold;
+            color: #007bff;
+        }
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #6c757d;
+        }
+        .debug-block {
+            display: none; /* Set to block for debugging */
+            background-color: #f8f9fa;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav class="navbar">
+            <a href="{% url 'creator_dashboard' %}" class="nav-link">Dashboard</a>
+            <a href="{% url 'logout' %}" class="nav-link">Logout</a>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <h1>{{ page_title|default:"Survey Results: " }}{{ survey.name }}</h1>
+        <p><strong>Description:</strong> {{ survey.description }}</p>
+        <hr>
+
+        <!-- Debugging Block -->
+        <div class="debug-block">
+            <strong>Debug Information:</strong>
+            <p><strong>Survey Name:</strong> {{ survey.name }}</p>
+            <p><strong>Survey ID:</strong> {{ survey.id }}</p>
+            <p><strong>Total Questions:</strong> {{ survey.questions.count }}</p>
+        </div>
+
+        <div class="results">
+            {% if survey.questions %}
+                {% for question in survey.questions.all %}
+                <div class="question">
+                    <h3>{{ question.text }}</h3>
+                    {% if question.options.exists %}
+                    <ul>
+                        {% for option in question.options.all %}
+                        <li>
+                            {{ option.text }}: 
+                            <span class="response-count">
+                                {{ option.response_count|default:0 }}
+                            </span>
+                            (<span class="percentage">
+                                {{ option.percentage|default:0 }}
+                            </span>%)
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p>No options or responses for this question yet.</p>
+                    {% endif %}
+                </div>
+                <hr>
+                {% endfor %}
+            {% else %}
+                <p>No questions available for this survey.</p>
+            {% endif %}
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; {% now "Y" %} SurveyMaster. All rights reserved.</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title|default:"Edit Survey - SurveyMaster" }}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            background-color: #f8f9fa;
+            padding: 10px 20px;
+        }
+        .nav-link {
+            text-decoration: none;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .nav-link:hover {
+            text-decoration: underline;
+        }
+        main {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        input, textarea, select, button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+        .add-option-btn, .remove-option-btn {
+            margin: 5px 0;
+            padding: 5px 10px;
+        }
+        .question {
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #6c757d;
+        }
+    </style>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            let questionCount = {{ questions|length }};  // Start with the existing number of questions
+            
+            // Function to add a new question dynamically
+            const addQuestion = () => {
+                questionCount++;
+                const questionsContainer = document.getElementById("questions-container");
+                const newQuestionHTML = `
+                <div class="form-group question" id="question_${questionCount}">
+                    <label for="question_${questionCount}">Question ${questionCount}:</label>
+                    <input type="text" id="question_${questionCount}" name="questions[new_${questionCount}][text]" placeholder="Enter your question" required>
+                    <label>Type:</label>
+                    <select name="questions[new_${questionCount}][type]" required>
+                        <option value="radio">Radio Button (Single Choice)</option>
+                        <option value="checkbox">Checkbox (Multiple Choice)</option>
+                        <option value="text">Text Response</option>
+                    </select>
+                    <div class="options-container" id="options-container-${questionCount}">
+                        <label>Options:</label>
+                        <input type="text" name="questions[new_${questionCount}][options][]" placeholder="Option 1" required>
+                        <button type="button" class="add-option-btn" data-question-id="${questionCount}">Add Option</button>
+                    </div>
+                </div>`;
+                questionsContainer.insertAdjacentHTML("beforeend", newQuestionHTML);
+            };
+
+            // Function to add options dynamically for a question
+            const addOption = (event) => {
+                const questionId = event.target.dataset.questionId;
+                const optionsContainer = document.getElementById(`options-container-${questionId}`);
+                const newOptionHTML = `<input type="text" name="questions[${questionId}][options][]" placeholder="New Option" required>`;
+                optionsContainer.insertAdjacentHTML("beforeend", newOptionHTML);
+            };
+
+            // Event listeners for adding questions and options
+            document.getElementById("add-question-btn").addEventListener("click", addQuestion);
+            document.addEventListener("click", (event) => {
+                if (event.target.classList.contains("add-option-btn")) {
+                    addOption(event);
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav>
+            <a href="{% url 'creator_dashboard' %}" class="nav-link">Dashboard</a>
+            <a href="{% url 'logout' %}" class="nav-link">Logout</a>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <h1>{{ page_title|default:"Edit Survey" }}</h1>
+        <form method="POST" action="{% url 'edit_survey' survey.id %}" class="survey-form">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="survey_name">Survey Name:</label>
+                <input type="text" id="survey_name" name="survey_name" value="{{ survey.name }}" required>
+            </div>
+            <div class="form-group">
+                <label for="description">Description:</label>
+                <textarea id="description" name="description" required>{{ survey.description }}</textarea>
+            </div>
+            <div id="questions-container">
+                {% for question in questions %}
+                <div class="form-group question">
+                    <label for="question_{{ forloop.counter }}">Question {{ forloop.counter }}:</label>
+                    <input type="text" id="question_{{ forloop.counter }}" name="questions[{{ question.id }}][text]" value="{{ question.text }}" required>
+                    <label>Type:</label>
+                    <select name="questions[{{ question.id }}][type]" required>
+                        <option value="radio" {% if question.question_type == 'radio' %}selected{% endif %}>Radio Button (Single Choice)</option>
+                        <option value="checkbox" {% if question.question_type == 'checkbox' %}selected{% endif %}>Checkbox (Multiple Choice)</option>
+                        <option value="text" {% if question.question_type == 'text' %}selected{% endif %}>Text Response</option>
+                    </select>
+                    <div class="options-container" id="options-container-{{ question.id }}">
+                        <label>Options:</label>
+                        {% for option in question.options.all %}
+                        <input type="text" name="questions[{{ question.id }}][options][]" value="{{ option.text }}" placeholder="Option {{ forloop.counter }}">
+                        {% endfor %}
+                        <button type="button" class="add-option-btn" data-question-id="{{ question.id }}">Add Option</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <button type="button" id="add-question-btn">Add Another Question</button>
+            <div class="form-actions">
+                <button type="submit" name="action" value="save_draft" class="btn">Save as Draft</button>
+                <button type="submit" name="action" value="publish" class="btn btn-primary">Publish</button>
+            </div>
+        </form>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; {% now "Y" %} SurveyMaster. All rights reserved.</p>
+    </footer>
+</body>
+</html>

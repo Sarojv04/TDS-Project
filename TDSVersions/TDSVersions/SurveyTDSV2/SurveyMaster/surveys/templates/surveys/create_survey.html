@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title|default:"Create Survey - SurveyMaster" }}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            background-color: #f8f9fa;
+            padding: 10px 20px;
+        }
+        .nav-link {
+            text-decoration: none;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .nav-link:hover {
+            text-decoration: underline;
+        }
+        main {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        input, textarea, select, button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+        button {
+            cursor: pointer;
+        }
+        .add-option-btn, .remove-option-btn {
+            margin: 5px 0;
+            padding: 5px 10px;
+        }
+        .question {
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #6c757d;
+        }
+    </style>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            let questionCount = 1;
+
+            // Function to add a new question dynamically
+            const addQuestion = () => {
+                questionCount++;
+                const questionsContainer = document.getElementById("questions-container");
+                const newQuestionHTML = `
+                <div class="question" id="question_${questionCount}">
+                    <label for="question_${questionCount}">Question ${questionCount}:</label>
+                    <input type="text" id="question_${questionCount}" name="questions[${questionCount}][text]" placeholder="Enter your question" required>
+                    <label for="type_${questionCount}">Type:</label>
+                    <select id="type_${questionCount}" name="questions[${questionCount}][type]" required>
+                        <option value="multiple_choice">Multiple Choice</option>
+                        <option value="single_choice">Single Choice</option>
+                        <option value="text">Text Response</option>
+                    </select>
+                    <div id="options-container-${questionCount}" class="options-container">
+                        <label>Options:</label>
+                        <input type="text" name="questions[${questionCount}][options][]" placeholder="Option 1" required>
+                        <input type="text" name="questions[${questionCount}][options][]" placeholder="Option 2" required>
+                        <button type="button" class="add-option-btn" aria-label="Add Option" data-question-id="${questionCount}">Add Option</button>
+                    </div>
+                </div>`;
+                questionsContainer.insertAdjacentHTML("beforeend", newQuestionHTML);
+            };
+
+            // Function to add a new option dynamically
+            const addOption = (event) => {
+                const questionId = event.target.dataset.questionId;
+                const optionsContainer = document.getElementById(`options-container-${questionId}`);
+                const newOptionHTML = `<input type="text" name="questions[${questionId}][options][]" placeholder="New Option" required>`;
+                optionsContainer.insertAdjacentHTML("beforeend", newOptionHTML);
+            };
+
+            // Attach event listeners
+            document.getElementById("add-question-btn").addEventListener("click", addQuestion);
+            document.addEventListener("click", (event) => {
+                if (event.target.classList.contains("add-option-btn")) {
+                    addOption(event);
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <a href="{% url 'creator_dashboard' %}" class="nav-link">Dashboard</a>
+        <a href="{% url 'logout' %}" class="nav-link">Logout</a>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <h1>{{ page_title|default:"Create a New Survey" }}</h1>
+        <form method="POST" action="{% url 'create_survey' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="survey_name">Survey Name:</label>
+                <input type="text" id="survey_name" name="survey_name" placeholder="Enter survey name" required>
+            </div>
+            <div class="form-group">
+                <label for="description">Description:</label>
+                <textarea id="description" name="description" placeholder="Brief description of the survey" required></textarea>
+            </div>
+            <div id="questions-container">
+                <div class="question" id="question_1">
+                    <label for="question_1">Question 1:</label>
+                    <input type="text" id="question_1" name="questions[1][text]" placeholder="Enter your question" required>
+                    <label for="type_1">Type:</label>
+                    <select id="type_1" name="questions[1][type]" required>
+                        <option value="multiple_choice">Multiple Choice</option>
+                        <option value="single_choice">Single Choice</option>
+                        <option value="text">Text Response</option>
+                    </select>
+                    <div id="options-container-1" class="options-container">
+                        <label>Options:</label>
+                        <input type="text" name="questions[1][options][]" placeholder="Option 1" required>
+                        <input type="text" name="questions[1][options][]" placeholder="Option 2" required>
+                        <button type="button" class="add-option-btn" aria-label="Add Option" data-question-id="1">Add Option</button>
+                    </div>
+                </div>
+            </div>
+            <button type="button" id="add-question-btn">Add Another Question</button>
+            <div class="form-group">
+                <button type="submit" name="action" value="save_draft">Save as Draft</button>
+                <button type="submit" name="action" value="publish">Publish</button>
+            </div>
+        </form>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; {% now "Y" %} SurveyMaster. All rights reserved.</p>
+    </footer>
+</body>
+</html>
+<script src="{% static 'js/survey.js' %}"></script>
+

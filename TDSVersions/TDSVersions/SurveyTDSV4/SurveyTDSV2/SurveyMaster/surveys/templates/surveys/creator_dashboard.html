@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title|default:"Creator Dashboard - SurveyMaster" }}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        nav ul {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        nav ul li a {
+            text-decoration: none;
+            font-weight: bold;
+            color: #007bff;
+        }
+        nav ul li a:hover {
+            text-decoration: underline;
+        }
+        .dashboard-actions {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f8f9fa;
+        }
+        .btn {
+            padding: 8px 12px;
+            text-decoration: none;
+            color: white;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+        .btn-primary {
+            background-color: #007bff;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        .btn-success {
+            background-color: #28a745;
+        }
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        .btn-warning {
+            background-color: #ffc107;
+        }
+        .btn-warning:hover {
+            background-color: #e0a800;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <h1>{{ page_title|default:"Survey Creator Dashboard" }}</h1>
+        <nav>
+            <ul>
+                <li><a href="{% url 'homepage' %}">Home</a></li>
+                <li><a href="{% url 'logout' %}">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <div class="dashboard-actions">
+            <a href="{% url 'create_survey' %}" class="btn btn-primary">Create New Survey</a>
+            <!-- Admin Button -->
+            <a href="/admin/" class="btn btn-warning">Admin</a>
+        </div>
+
+        <!-- Draft Surveys -->
+        <section>
+            <h2>Draft Surveys</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Survey Name</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for survey in drafts %}
+                        <tr>
+                            <td>{{ survey.name }}</td>
+                            <td>{{ survey.status|title }}</td>
+                            <td>
+                                <a href="{% url 'edit_survey' survey.id %}" class="btn btn-primary">Edit</a>
+                                <a href="{% url 'publish_survey' survey.id %}" class="btn btn-success">Publish</a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="3">No draft surveys found. <a href="{% url 'create_survey' %}">Create a New Survey</a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Published Surveys -->
+        <section>
+            <h2>Published Surveys</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Survey Name</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for survey in published %}
+                        <tr>
+                            <td>{{ survey.name }}</td>
+                            <td>{{ survey.status|title }}</td>
+                            <td>
+                                <a href="{% url 'close_survey' survey.id %}" class="btn btn-warning">Close</a>
+                                <a href="{% url 'survey_results' survey.id %}" class="btn btn-primary">View Results</a>
+                                <a href="{% url 'republish_survey' survey.id %}" class="btn btn-info">Republish</a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="3">No published surveys found.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Closed Surveys -->
+        <section>
+            <h2>Closed Surveys</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Survey Name</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for survey in closed %}
+                        <tr>
+                            <td>{{ survey.name }}</td>
+                            <td>{{ survey.status|title }}</td>
+                            <td>
+                                <a href="{% url 'survey_results' survey.id %}" class="btn btn-primary">View Results</a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="3">No closed surveys found.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; {% now "Y" %} SurveyMaster. All rights reserved.</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,23 @@
+<h1>Manage Surveys</h1>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for survey in surveys %}
+        <tr>
+            <td>{{ survey.name }}</td>
+            <td>{{ "Published" if survey.is_published else "Draft" }}</td>
+            <td>
+                <a href="{% url 'edit_survey' survey.id %}">Edit</a> |
+                <a href="{% url 'survey_results' survey.id %}">Results</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<a href="{% url 'create_survey' %}">Create New Survey</a>

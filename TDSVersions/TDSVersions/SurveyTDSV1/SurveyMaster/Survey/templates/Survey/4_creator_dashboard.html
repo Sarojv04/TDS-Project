@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Creator Dashboard</title>
+</head>
+<body>
+    <h1>Welcome to the Creator Dashboard</h1>
+    <p>Hello, {{ request.user.username }}! You are logged in as a superuser.</p>
+    
+    <h2>What would you like to do?</h2>
+    <ul>
+        <li><a href="{% url 'create_survey' %}">Create a New Survey</a></li>
+        <li><a href="{% url 'manage_surveys' %}">Manage Existing Surveys</a></li>
+        <li><a href="{% url 'logout' %}">Logout</a></li>
+    </ul>
+</body>
+</html>
